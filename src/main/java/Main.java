@@ -22,10 +22,10 @@ public class Main {
                 }
                 else if(commandsplit[0].equals("type")){
                     if(BUILDINCOMMAND.contains(commandsplit[1])){
-                        System.out.printf("<%s> is a shell builtin\n",commandsplit[1]);
+                        System.out.printf("%s is a shell builtin\n",commandsplit[1]);
                     }
                     else {
-                        System.out.printf("<%s>: not found\n",commandsplit[1]);
+                        System.out.printf("%s: not found\n",commandsplit[1]);
                     }
                 }
                 else {
