@@ -13,7 +13,7 @@ public class Main {
             Scanner scanner = new Scanner(System.in);
             command = scanner.nextLine();
             if(command!= null){
-                String[] commandsplit = command.split(" ",1);
+                String[] commandsplit = command.split(" ",2);
                 if(command.equals("exit")){
                     break;
                 }
