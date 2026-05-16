@@ -14,7 +14,7 @@ public class Main {
                     break;
                 }
                 else if(command.split(" ")[0].equals("echo")){
-                    System.out.println(command.substring(5));
+                    System.out.println(command.substring(4));
                 }
                 else {
                     System.out.printf("%s: command not found\n", command);
