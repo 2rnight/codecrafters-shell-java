@@ -8,9 +8,13 @@ public class Main {
             System.out.print("$ ");
             Scanner scanner = new Scanner(System.in);
             command = scanner.nextLine();
+
             if(command!= null){
                 if(command.equals("exit")){
                     break;
+                }
+                else if(command.split(" ")[0].equals("echo")){
+                    System.out.println(command.substring(5));
                 }
                 else {
                     System.out.printf("%s: command not found\n", command);
