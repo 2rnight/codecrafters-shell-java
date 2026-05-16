@@ -9,7 +9,12 @@ public class Main {
             Scanner scanner = new Scanner(System.in);
             command = scanner.nextLine();
             if(command!= null){
-                System.out.printf("%s: command not found\n",command);
+                if(command.equals("exit")){
+                    break;
+                }
+                else {
+                    System.out.printf("%s: command not found\n", command);
+                }
             }
         }
 
