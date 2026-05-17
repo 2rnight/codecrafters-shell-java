@@ -1,9 +1,10 @@
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.Scanner;
 import java.util.Set;
 
 public class Main {
-    private static final Set<String> BUILTIN_COMMANDS = Set.of("exit", "echo", "type");
+    private static final Set<String> BUILTIN_COMMANDS = Set.of("exit", "echo", "type","pwd");
 
     public static void main(String[] args) throws Exception{
         Scanner scanner = new Scanner(System.in);
@@ -30,6 +31,8 @@ public class Main {
                 handleEcho(parts);
             } else if ("type".equals(command)) {
                 handleType(parts);
+            } else if ("pwd".equals(command)) {
+                handlePwd();
             } else {
                 if(findExecutable(command) !=null){
                     Process process = Runtime.getRuntime().exec(commandLine.split(" "));
@@ -41,6 +44,10 @@ public class Main {
         }
 
         scanner.close();
+    }
+
+    private static void handlePwd() {
+        System.out.println(Paths.get("").toAbsolutePath());
     }
 
     private static void handleEcho(String[] parts) {
