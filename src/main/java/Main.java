@@ -32,7 +32,7 @@ public class Main {
                         for(String p:path_command){
                             File file = new File(p,commandsplit[1]);
                             if(file.exists() && file.canExecute()){
-                                System.out.println(commandsplit[1]+" is "+p+commandsplit[1]);
+                                System.out.println(commandsplit[1]+" is "+p+"/"commandsplit[1]);
                                 sign = true;
                             }
                         }
