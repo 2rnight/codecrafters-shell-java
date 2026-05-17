@@ -1,3 +1,4 @@
+import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
@@ -12,6 +13,9 @@ public class Main {
             System.out.print("$ ");
             Scanner scanner = new Scanner(System.in);
             command = scanner.nextLine();
+            String path_commands = System.getenv("PATH");
+            String[] path_command = path_commands.split(":");
+            Boolean sign = false;
             if(command!= null){
                 String[] commandsplit = command.split(" ",2);
                 if(command.equals("exit")){
@@ -25,7 +29,16 @@ public class Main {
                         System.out.printf("%s is a shell builtin\n",commandsplit[1]);
                     }
                     else {
-                        System.out.printf("%s: not found\n",commandsplit[1]);
+                        for(String p:path_command){
+                            File file = new File(p,commandsplit[1]);
+                            if(file.exists() && file.canExecute()){
+                                System.out.println(commandsplit[1]+" is "+p+commandsplit[1]);
+                                sign = true;
+                            }
+                        }
+                        if(!sign) {
+                            System.out.printf("%s: not found\n", commandsplit[1]);
+                        }
                     }
                 }
                 else {
