@@ -1,52 +1,92 @@
 import java.io.File;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 
 public class Main {
-    public static void main(String[] args) throws Exception {
-        // TODO: Uncomment the code below to pass the first stage
-        // 使用 List 接口接收，更符合面向对象设计规范
-        final HashSet<String> BUILDINCOMMAND = new HashSet<>(List.of("exit", "echo", "type"));
+    private static final Set<String> BUILTIN_COMMANDS = Set.of("exit", "echo", "type");
+
+    public static void main(String[] args) throws Exception{
+        Scanner scanner = new Scanner(System.in);
+
         while (true) {
-            String command = null;
             System.out.print("$ ");
-            Scanner scanner = new Scanner(System.in);
-            command = scanner.nextLine();
-            String path_commands = System.getenv("PATH");
-            String[] path_command = path_commands.split(":");
-            Boolean sign = false;
-            if(command!= null){
-                String[] commandsplit = command.split(" ",2);
-                if(command.equals("exit")){
-                    break;
-                }
-                else if(commandsplit[0].equals("echo")){
-                    System.out.println(command.substring(5));
-                }
-                else if(commandsplit[0].equals("type")){
-                    if(BUILDINCOMMAND.contains(commandsplit[1])){
-                        System.out.printf("%s is a shell builtin\n",commandsplit[1]);
-                    }
-                    else {
-                        for(String p:path_command){
-                            File file = new File(p,commandsplit[1]);
-                            if(file.exists() && file.canExecute()){
-                                System.out.println(commandsplit[1]+" is "+p+"/"+commandsplit[1]);
-                                sign = true;
-                            }
-                        }
-                        if(!sign) {
-                            System.out.printf("%s: not found\n", commandsplit[1]);
-                        }
-                    }
-                }
-                else {
-                    System.out.printf("%s: command not found\n", command);
+
+            if (!scanner.hasNextLine()) {
+                break;
+            }
+
+            String commandLine = scanner.nextLine();
+
+            if (commandLine == null || commandLine.isBlank()) {
+                continue;
+            }
+
+            String[] parts = commandLine.split(" ", 2);
+            String command = parts[0];
+
+            if ("exit".equals(commandLine) || "exit".equals(command)) {
+                break;
+            } else if ("echo".equals(command)) {
+                handleEcho(parts);
+            } else if ("type".equals(command)) {
+                handleType(parts);
+            } else {
+                if(findExecutable(command) !=null){
+                    Process process = Runtime.getRuntime().exec(commandLine.split(" "));
+                    process.getInputStream().transferTo(System.out);
+                }else {
+                    System.out.printf("%s: command not found%n", command);
                 }
             }
         }
 
+        scanner.close();
+    }
 
+    private static void handleEcho(String[] parts) {
+        if (parts.length < 2) {
+            System.out.println();
+        } else {
+            System.out.println(parts[1]);
+        }
+    }
+
+    private static void handleType(String[] parts) {
+        if (parts.length < 2 || parts[1].isBlank()) {
+            System.out.println("type: missing argument");
+            return;
+        }
+
+        String target = parts[1];
+
+        if (BUILTIN_COMMANDS.contains(target)) {
+            System.out.printf("%s is a shell builtin%n", target);
+            return;
+        }
+
+        String executablePath = findExecutable(target);
+        if (executablePath != null) {
+            System.out.printf("%s is %s%n", target, executablePath);
+        } else {
+            System.out.printf("%s: not found%n", target);
+        }
+    }
+
+    private static String findExecutable(String command) {
+        String pathEnv = System.getenv("PATH");
+        if (pathEnv == null || pathEnv.isBlank()) {
+            return null;
+        }
+
+        String[] directories = pathEnv.split(File.pathSeparator);
+
+        for (String dir : directories) {
+            File file = new File(dir, command);
+            if (file.exists() && file.isFile() && file.canExecute()) {
+                return file.getAbsolutePath();
+            }
+        }
+
+        return null;
     }
 }
