@@ -28,7 +28,8 @@ public class Main {
             }
 
             String[] parts = commandLine.split(" ", 2);
-            List<String> Args = handleQuetes(parts[1]);
+            String rawArgs = parts.length > 1 ? parts[1] : "";
+            List<String> Args = handleQuetes(rawArgs);
             String command = parts[0];
 
             if ("exit".equals(commandLine) || "exit".equals(command)) {
