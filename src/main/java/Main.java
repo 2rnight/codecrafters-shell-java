@@ -1,14 +1,15 @@
 import java.io.File;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
 import java.util.Set;
 
 public class Main {
-    private static final Set<String> BUILTIN_COMMANDS = Set.of("exit", "echo", "type","pwd");
+    private static final Set<String> BUILTIN_COMMANDS = Set.of("exit", "echo", "type","pwd","cd");
 
     public static void main(String[] args) throws Exception{
         Scanner scanner = new Scanner(System.in);
-
+        Path cwd = Paths.get("").toAbsolutePath();
         while (true) {
             System.out.print("$ ");
 
@@ -32,7 +33,9 @@ public class Main {
             } else if ("type".equals(command)) {
                 handleType(parts);
             } else if ("pwd".equals(command)) {
-                handlePwd();
+                System.out.println(cwd);
+            } else if ("cd".equals(command)){
+                cwd = handleCd(cwd,parts);
             } else {
                 if(findExecutable(command) !=null){
                     Process process = Runtime.getRuntime().exec(commandLine.split(" "));
@@ -46,9 +49,13 @@ public class Main {
         scanner.close();
     }
 
-    private static void handlePwd() {
-        System.out.println(Paths.get("").toAbsolutePath());
+    private static Path handleCd(Path cwd, String[] parts) {
+        File file = new File(parts[1]);
+        if(file.isDirectory()) return file.toPath();
+        else System.out.println("cd: " + parts[1] + ": No such file or directory");
+        return cwd;
     }
+
 
     private static void handleEcho(String[] parts) {
         if (parts.length < 2) {
