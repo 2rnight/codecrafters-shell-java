@@ -53,6 +53,9 @@ public class Main {
     private static Path handleCd(Path cwd, String[] parts) {
         if(parts.length<2) return cwd;
         Path targetPath = Paths.get(parts[1]);
+        if("~".equals(parts[1])){
+            return getCurrentDirectory(cwd,Path.of(System.getenv("HOME")));
+        }
         if(targetPath.isAbsolute()){
             return getCurrentDirectory(cwd,targetPath);
         } else{
@@ -62,7 +65,7 @@ public class Main {
     }
 
     private static Path getCurrentDirectory(Path originPath, Path targetPath) {
-        if(Files.isDirectory(targetPath)) return targetPath;
+        if(Files.exists(targetPath) && Files.isDirectory(targetPath)) return targetPath;
         else System.out.println("cd: " + targetPath + ": No such file or directory");
         return originPath;
     }
