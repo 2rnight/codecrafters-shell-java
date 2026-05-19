@@ -2,6 +2,8 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -25,12 +27,13 @@ public class Main {
             }
 
             String[] parts = commandLine.split(" ", 2);
+            List<String> Args = handleQuetes(parts[1]);
             String command = parts[0];
 
             if ("exit".equals(commandLine) || "exit".equals(command)) {
                 break;
             } else if ("echo".equals(command)) {
-                handleEcho(parts);
+                handleEcho(Args);
             } else if ("type".equals(command)) {
                 handleType(parts);
             } else if ("pwd".equals(command)) {
@@ -48,6 +51,38 @@ public class Main {
         }
 
         scanner.close();
+    }
+
+    private static List<String> handleQuetes(String part) {
+        List<String> args = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean inSingleQuote = false;
+        boolean tokenStarted = false;
+        for(char c:part.toCharArray()){
+            if(inSingleQuote){
+                if(c == '\''){
+                    inSingleQuote = false;
+                }else{
+                    current.append(c);
+                }
+            }else{
+                if(c =='\''){
+                    inSingleQuote = true;
+                    tokenStarted = true;
+                } else if (Character.isWhitespace(c)) {
+                    args.add(current.toString());
+                    current.setLength(0);
+                    tokenStarted = false;
+                }else {
+                    current.append(c);
+                    tokenStarted = true;
+                }
+            }
+        }
+        if (tokenStarted) {
+            args.add(current.toString());
+        }
+        return args;
     }
 
     private static Path handleCd(Path cwd, String[] parts) {
@@ -71,11 +106,11 @@ public class Main {
     }
 
 
-    private static void handleEcho(String[] parts) {
-        if (parts.length < 2) {
+    private static void handleEcho(List<String> parts) {
+        if (parts.isEmpty()) {
             System.out.println();
         } else {
-            System.out.println(parts[1]);
+            System.out.println(String.join(" ",parts));
         }
     }
 
