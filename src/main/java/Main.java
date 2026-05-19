@@ -1,4 +1,5 @@
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,11 +42,22 @@ public class Main {
             } else if ("cd".equals(command)){
                 cwd = handleCd(cwd,parts);
             } else {
-                if(findExecutable(command) !=null){
-                    Process process = Runtime.getRuntime().exec(commandLine.split(" "));
-                    process.getInputStream().transferTo(System.out);
-                }else {
-                    System.out.printf("%s: command not found%n", command);
+                try {
+                    List<String> fullArgs = new ArrayList<>();
+                    fullArgs.add(command);
+                    fullArgs.addAll(Args);
+
+                    ProcessBuilder pb = new ProcessBuilder(fullArgs);
+
+                    // 关键：这行代码代替了所有的 transferTo，它能处理标准输出和错误输出
+                    pb.inheritIO();
+
+                    Process process = pb.start();
+                    process.waitFor(); // 必须等待子进程结束，否则提示符 $ 会乱入到输出中间
+                } catch (IOException e) {
+                    System.out.println(command + ": command not found");
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                 }
             }
         }
