@@ -107,6 +107,7 @@ public class Main {
 
 
     private static void handleEcho(List<String> parts) {
+        System.out.println(parts+"test");
         if (parts.isEmpty()) {
             System.out.println();
         } else {
