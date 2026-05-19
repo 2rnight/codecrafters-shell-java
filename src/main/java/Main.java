@@ -1,4 +1,5 @@
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
@@ -50,10 +51,20 @@ public class Main {
     }
 
     private static Path handleCd(Path cwd, String[] parts) {
-        File file = new File(parts[1]);
-        if(file.isDirectory()) return file.toPath();
-        else System.out.println("cd: " + parts[1] + ": No such file or directory");
-        return cwd;
+        if(parts.length<2) return cwd;
+        Path targetPath = Paths.get(parts[1]);
+        if(targetPath.isAbsolute()){
+            return getCurrentDirectory(cwd,targetPath);
+        } else{
+            Path newpath = cwd.resolve(targetPath).normalize();
+            return getCurrentDirectory(cwd,newpath);
+        }
+    }
+
+    private static Path getCurrentDirectory(Path originPath, Path targetPath) {
+        if(Files.isDirectory(targetPath)) return targetPath;
+        else System.out.println("cd: " + targetPath + ": No such file or directory");
+        return originPath;
     }
 
 
