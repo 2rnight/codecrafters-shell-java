@@ -70,8 +70,10 @@ public class Main {
                     inSingleQuote = true;
                     tokenStarted = true;
                 } else if (Character.isWhitespace(c)) {
-                    args.add(current.toString());
-                    current.setLength(0);
+                    if (current.length() > 0) {
+                        args.add(current.toString());
+                        current.setLength(0);
+                    }
                     tokenStarted = false;
                 }else {
                     current.append(c);
