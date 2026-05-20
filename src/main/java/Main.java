@@ -37,7 +37,7 @@ public class Main {
             } else if ("echo".equals(command)) {
                 handleEcho(Args);
             } else if ("type".equals(command)) {
-                handleType(Args.toArray(new String[0]));
+                handleType(tokens.toArray(new String[0]));
             } else if ("pwd".equals(command)) {
                 System.out.println(cwd);
             } else if ("cd".equals(command)){
