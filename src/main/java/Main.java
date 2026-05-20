@@ -27,21 +27,21 @@ public class Main {
                 continue;
             }
 
-            String[] parts = commandLine.split(" ", 2);
-            String rawArgs = parts.length > 1 ? parts[1] : "";
-            List<String> Args = handleQuetes(rawArgs);
-            String command = parts[0];
+
+            List<String> tokens = parseTokens(commandLine);
+            String command = tokens.get(0);
+            List<String> Args = tokens.subList(1,tokens.size());
 
             if ("exit".equals(commandLine) || "exit".equals(command)) {
                 break;
             } else if ("echo".equals(command)) {
                 handleEcho(Args);
             } else if ("type".equals(command)) {
-                handleType(parts);
+                handleType(Args.toArray(new String[0]));
             } else if ("pwd".equals(command)) {
                 System.out.println(cwd);
             } else if ("cd".equals(command)){
-                cwd = handleCd(cwd,parts);
+                cwd = handleCd(cwd,Args.toArray(new String[0]));
             } else {
                 try {
                     List<String> fullArgs = new ArrayList<>();
@@ -66,38 +66,39 @@ public class Main {
         scanner.close();
     }
 
-    private static List<String> handleQuetes(String part) {
-        List<String> args = new ArrayList<>();
+    private static List<String> parseTokens(String input) {
+        List<String> tokens = new ArrayList<>();
         StringBuilder current = new StringBuilder();
         boolean inSingleQuote = false;
-        boolean tokenStarted = false;
-        for(char c:part.toCharArray()){
-            if(inSingleQuote){
-                if(c == '\''){
-                    inSingleQuote = false;
-                }else{
-                    current.append(c);
+
+        for (char c : input.toCharArray()) {
+            if (inSingleQuote) {
+                if (c == '\'') {
+                    inSingleQuote = false; // 引号结束
+                } else {
+                    current.append(c); // 引号内的字符全部保留
                 }
-            }else{
-                if(c =='\''){
-                    inSingleQuote = true;
-                    tokenStarted = true;
+            } else {
+                if (c == '\'') {
+                    inSingleQuote = true; // 进入引号
                 } else if (Character.isWhitespace(c)) {
+                    // 遇到空格：如果是单词的结束，加入列表
                     if (current.length() > 0) {
-                        args.add(current.toString());
-                        current.setLength(0);
+                        tokens.add(current.toString());
+                        current.setLength(0); // 清空 buffer
                     }
-                    tokenStarted = false;
-                }else {
-                    current.append(c);
-                    tokenStarted = true;
+                } else {
+                    current.append(c); // 普通字符
                 }
             }
         }
-        if (tokenStarted) {
-            args.add(current.toString());
+
+        // 补上最后一个单词
+        if (current.length() > 0) {
+            tokens.add(current.toString());
         }
-        return args;
+
+        return tokens;
     }
 
     private static Path handleCd(Path cwd, String[] parts) {
