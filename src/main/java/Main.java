@@ -73,7 +73,7 @@ public class Main {
         boolean inDoubleQuote = false;
         boolean inBackslash = false;
         for (char c : input.toCharArray()) {
-            if (c == '\\') {inBackslash = true; continue;}
+            if (c == '\\' && !inBackslash) {inBackslash = true; continue;}
             if(inBackslash){
                 current.append(c);
                 inBackslash = false;
