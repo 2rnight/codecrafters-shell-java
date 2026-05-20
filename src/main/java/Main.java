@@ -87,6 +87,8 @@ public class Main {
             } else if (inDoubleQuote) {
                 if(c =='\"'){
                     inDoubleQuote = false;
+                } else if (c =='\\') {
+                    inBackslash = true;
                 } else {
                     current.append(c);
                 }
