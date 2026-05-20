@@ -70,17 +70,25 @@ public class Main {
         List<String> tokens = new ArrayList<>();
         StringBuilder current = new StringBuilder();
         boolean inSingleQuote = false;
-
+        boolean inDoubleQuote = false;
         for (char c : input.toCharArray()) {
             if (inSingleQuote) {
                 if (c == '\'') {
-                    inSingleQuote = false; // 引号结束
+                    inSingleQuote = false;
                 } else {
                     current.append(c); // 引号内的字符全部保留
                 }
+            } else if (inDoubleQuote) {
+                if(c =='\"'){
+                    inDoubleQuote = false;
+                } else {
+                    current.append(c);
+                }
             } else {
                 if (c == '\'') {
-                    inSingleQuote = true; // 进入引号
+                    inSingleQuote = true;
+                } else if (c =='\"') {
+                    inDoubleQuote = true;
                 } else if (Character.isWhitespace(c)) {
                     // 遇到空格：如果是单词的结束，加入列表
                     if (current.length() > 0) {
