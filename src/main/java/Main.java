@@ -71,7 +71,14 @@ public class Main {
         StringBuilder current = new StringBuilder();
         boolean inSingleQuote = false;
         boolean inDoubleQuote = false;
+        boolean inBackslash = false;
         for (char c : input.toCharArray()) {
+            if (c == '\\') {inBackslash = true; continue;}
+            if(inBackslash){
+                current.append(c);
+                inBackslash = false;
+                continue;
+            }
             if (inSingleQuote) {
                 if (c == '\'') {
                     inSingleQuote = false;
