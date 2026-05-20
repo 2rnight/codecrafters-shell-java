@@ -94,6 +94,8 @@ public class Main {
                     inBackslash = true;
                 } else if (inBackslash) {
                     current.append(c);
+                    if(inSingleQuote) inSingleQuote = false;
+                    if(inDoubleQuote) inDoubleQuote = false;
                     inBackslash = false;
                 } else if (Character.isWhitespace(c)) {
                     // 遇到空格：如果是单词的结束，加入列表
