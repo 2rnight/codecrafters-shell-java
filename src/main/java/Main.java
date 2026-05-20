@@ -41,7 +41,7 @@ public class Main {
             } else if ("pwd".equals(command)) {
                 System.out.println(cwd);
             } else if ("cd".equals(command)){
-                cwd = handleCd(cwd,Args.toArray(new String[0]));
+                cwd = handleCd(cwd,tokens.toArray(new String[0]));
             } else {
                 try {
                     List<String> fullArgs = new ArrayList<>();
