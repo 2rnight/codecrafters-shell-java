@@ -73,12 +73,6 @@ public class Main {
         boolean inDoubleQuote = false;
         boolean inBackslash = false;
         for (char c : input.toCharArray()) {
-            if (c == '\\' && !inBackslash) {inBackslash = true; continue;}
-            if(inBackslash){
-                current.append(c);
-                inBackslash = false;
-                continue;
-            }
             if (inSingleQuote) {
                 if (c == '\'') {
                     inSingleQuote = false;
@@ -96,6 +90,11 @@ public class Main {
                     inSingleQuote = true;
                 } else if (c =='\"') {
                     inDoubleQuote = true;
+                } else if (c =='\\') {
+                    inBackslash = true;
+                } else if (inBackslash) {
+                    current.append(c);
+                    inBackslash = false;
                 } else if (Character.isWhitespace(c)) {
                     // 遇到空格：如果是单词的结束，加入列表
                     if (current.length() > 0) {
