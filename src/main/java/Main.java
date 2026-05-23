@@ -73,7 +73,7 @@ public class Main {
         } else if ("type".equals(command)) {
             res =handleType(commandArgs.toArray(new String[0]));
         } else if ("pwd".equals(command)) {
-            res.stdout = cwd.toString();
+            res.stdout = cwd.toString()+"\n";
         } else if ("cd".equals(command)){
             cwd = handleCd(cwd,commandArgs.toArray(new String[0]));
         } else {
@@ -229,21 +229,21 @@ public class Main {
     private static Result handleType(String[] parts) {
         Result res = new Result();
         if (parts.length < 2 || parts[1].isBlank()) {
-            res.stderr = "type: missing argument";
+            res.stderr = "type: missing argument\n";
             return res;
         }
         String target = parts[1];
         if (BUILTIN_COMMANDS.contains(target)) {
-            res.stdout = target+" is a shell builtin%n";
+            res.stdout = target+" is a shell builtin\n";
             return res;
         }
 
         String executablePath = findExecutable(target);
         if (executablePath != null) {
-            res.stdout = target+" is "+executablePath;
+            res.stdout = target+" is "+executablePath+"\n";
             return res;
         } else {
-            res.stderr = target+": not found";
+            res.stderr = target+": not found\n";
             return res;
         }
     }
