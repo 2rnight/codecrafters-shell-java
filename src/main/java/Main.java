@@ -5,7 +5,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-import
 
 public class Main {
     private static final Set<String> BUILTIN_COMMANDS = Set.of("exit", "echo", "type","pwd","cd");
@@ -28,7 +27,7 @@ public class Main {
 
             List<String> tokens = parseTokens(commandLine);
             processCommand(tokens);
-            
+
         }
 
         scanner.close();
