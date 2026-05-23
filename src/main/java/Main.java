@@ -41,7 +41,7 @@ public class Main {
         for (int i = 0; i < tokens.size(); i++) {
             String token = tokens.get(i);
 
-            if (">".equals(token)) {
+            if (">".equals(token)||"1>".equals(token)) {
                 if (i + 1 >= tokens.size()) {
                     System.err.println("syntax error: no file after >");
                     return;
