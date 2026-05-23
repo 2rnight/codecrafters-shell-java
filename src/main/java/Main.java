@@ -111,7 +111,7 @@ public class Main {
             process.waitFor(); // 等待进程结束
 
         } catch (IOException | InterruptedException e) {
-            res.stderr = "Error executing command: " + e.getMessage() + "\n";
+            res.stderr = commandArgs.getFirst()+": command not found\n";
         }
         return res;
     }
