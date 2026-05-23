@@ -80,13 +80,13 @@ public class Main {
             res = executeExternal(commandArgs);
         }
         if (stdoutFiles.isEmpty()) {
-            System.out.println(res.stdout);
+            System.out.print(res.stdout);
         } else {
             writeToFile(stdoutFiles, res.stdout);
         }
 
         if (stderrFiles.isEmpty()) {
-            System.err.println(res.stderr);
+            System.err.print(res.stderr);
         } else {
             writeToFile(stderrFiles, res.stderr);
         }
