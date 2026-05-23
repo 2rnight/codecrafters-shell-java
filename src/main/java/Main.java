@@ -77,23 +77,7 @@ public class Main {
         } else if ("cd".equals(command)){
             cwd = handleCd(cwd,commandArgs.toArray(new String[0]));
         } else {
-            try {
-                List<String> fullArgs = new ArrayList<>();
-                fullArgs.add(command);
-                fullArgs.addAll(Args);
-
-                ProcessBuilder pb = new ProcessBuilder(fullArgs);
-
-                // 关键：这行代码代替了所有的 transferTo，它能处理标准输出和错误输出
-                pb.inheritIO();
-
-                Process process = pb.start();
-                process.waitFor(); // 必须等待子进程结束，否则提示符 $ 会乱入到输出中间
-            } catch (IOException e) {
-                res.stderr = command+ ": command not found";
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            res = executeExternal(commandArgs);
         }
         if (stdoutFiles.isEmpty()) {
             System.out.print(res.stdout);
@@ -108,6 +92,30 @@ public class Main {
         }
 
     }
+    private static Result executeExternal(List<String> commandArgs) {
+        Result res = new Result();
+        try {
+            ProcessBuilder pb = new ProcessBuilder(commandArgs);
+
+
+            Process process = pb.start();
+
+            // 1. 异步读取标准输出 (stdout)
+            byte[] stdoutBytes = process.getInputStream().readAllBytes();
+            res.stdout = new String(stdoutBytes);
+
+            // 2. 异步读取标准错误 (stderr)
+            byte[] stderrBytes = process.getErrorStream().readAllBytes();
+            res.stderr = new String(stderrBytes);
+
+            process.waitFor(); // 等待进程结束
+
+        } catch (IOException | InterruptedException e) {
+            res.stderr = "Error executing command: " + e.getMessage() + "\n";
+        }
+        return res;
+    }
+
     private static void writeToFile(List<String> fileName, String content) {
         try {
             for(int i = 0;i<fileName.size();i++){
