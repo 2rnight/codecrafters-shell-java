@@ -3,17 +3,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
+
+import
 
 public class Main {
     private static final Set<String> BUILTIN_COMMANDS = Set.of("exit", "echo", "type","pwd","cd");
-
+    static Path cwd = Paths.get("").toAbsolutePath();
     public static void main(String[] args) throws Exception{
         Scanner scanner = new Scanner(System.in);
-        Path cwd = Paths.get("").toAbsolutePath();
         while (true) {
             System.out.print("$ ");
 
@@ -29,41 +27,110 @@ public class Main {
 
 
             List<String> tokens = parseTokens(commandLine);
-            String command = tokens.get(0);
-            List<String> Args = tokens.subList(1,tokens.size());
-
-            if ("exit".equals(commandLine) || "exit".equals(command)) {
-                break;
-            } else if ("echo".equals(command)) {
-                handleEcho(Args);
-            } else if ("type".equals(command)) {
-                handleType(tokens.toArray(new String[0]));
-            } else if ("pwd".equals(command)) {
-                System.out.println(cwd);
-            } else if ("cd".equals(command)){
-                cwd = handleCd(cwd,tokens.toArray(new String[0]));
-            } else {
-                try {
-                    List<String> fullArgs = new ArrayList<>();
-                    fullArgs.add(command);
-                    fullArgs.addAll(Args);
-
-                    ProcessBuilder pb = new ProcessBuilder(fullArgs);
-
-                    // 关键：这行代码代替了所有的 transferTo，它能处理标准输出和错误输出
-                    pb.inheritIO();
-
-                    Process process = pb.start();
-                    process.waitFor(); // 必须等待子进程结束，否则提示符 $ 会乱入到输出中间
-                } catch (IOException e) {
-                    System.out.println(command + ": command not found");
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            }
+            processCommand(tokens);
+            
         }
 
         scanner.close();
+    }
+
+    public static void processCommand(List<String> tokens) {
+        List<String> commandArgs = new ArrayList<>();
+        List<String> stdoutFiles = new ArrayList<>();
+        List<String> stderrFiles = new ArrayList<>();
+
+        for (int i = 0; i < tokens.size(); i++) {
+            String token = tokens.get(i);
+
+            if (">".equals(token)) {
+                if (i + 1 >= tokens.size()) {
+                    System.err.println("syntax error: no file after >");
+                    return;
+                }
+                stdoutFiles.add(tokens.get(++i));
+            } else if ("2>".equals(token)) {
+                if (i + 1 >= tokens.size()) {
+                    System.err.println("syntax error: no file after 2>");
+                    return;
+                }
+                stderrFiles.add(tokens.get(++i));
+            } else {
+                commandArgs.add(token);
+            }
+        }
+
+        // 如果 outputFiles 为空，说明没有重定向，逻辑自然退化为普通执行
+        execute(commandArgs,stdoutFiles,stderrFiles);
+    }
+    private static void execute(List<String> commandArgs, List<String> stdoutFiles, List<String> stderrFiles) {
+        String command = commandArgs.get(0);
+        List<String> Args = commandArgs.subList(1,commandArgs.size());
+        Result res = new Result();
+
+        if ("exit".equals(command)) {
+            System.exit(0);
+        } else if ("echo".equals(command)) {
+            res = handleEcho(Args);
+        } else if ("type".equals(command)) {
+            res =handleType(commandArgs.toArray(new String[0]));
+        } else if ("pwd".equals(command)) {
+            res.stdout = cwd.toString();
+        } else if ("cd".equals(command)){
+            cwd = handleCd(cwd,commandArgs.toArray(new String[0]));
+        } else {
+            try {
+                List<String> fullArgs = new ArrayList<>();
+                fullArgs.add(command);
+                fullArgs.addAll(Args);
+
+                ProcessBuilder pb = new ProcessBuilder(fullArgs);
+
+                // 关键：这行代码代替了所有的 transferTo，它能处理标准输出和错误输出
+                pb.inheritIO();
+
+                Process process = pb.start();
+                process.waitFor(); // 必须等待子进程结束，否则提示符 $ 会乱入到输出中间
+            } catch (IOException e) {
+                res.stderr = command+ ": command not found";
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        if (stdoutFiles.isEmpty()) {
+            System.out.print(res.stdout);
+        } else {
+            writeToFile(stdoutFiles, res.stdout);
+        }
+
+        if (stderrFiles.isEmpty()) {
+            System.err.print(res.stderr);
+        } else {
+            writeToFile(stderrFiles, res.stderr);
+        }
+
+    }
+    private static void writeToFile(List<String> fileName, String content) {
+        try {
+            for(int i = 0;i<fileName.size();i++){
+                Path filePath = cwd.resolve(fileName.get(i));
+
+                if (filePath.getParent() != null) {
+                    Files.createDirectories(filePath.getParent());
+                }
+
+                if(i ==fileName.size()-1){
+                    Files.writeString(filePath, content);
+                }else{
+                    Files.writeString(filePath, "");
+                }
+                // 写入文件（不存在则创建，存在则覆盖）
+
+            }
+
+
+        } catch (IOException e) {
+            System.err.println("Error writing to file: " + e.getMessage());
+        }
     }
 
     private static List<String> parseTokens(String input) {
@@ -140,32 +207,35 @@ public class Main {
     }
 
 
-    private static void handleEcho(List<String> parts) {
+    private static Result handleEcho(List<String> parts) {
+        Result res = new Result();
         if (parts.isEmpty()) {
-            System.out.println();
+            return res;
         } else {
-            System.out.println(String.join(" ",parts));
+            res.stdout = String.join(" ",parts);
+            return res;
         }
     }
 
-    private static void handleType(String[] parts) {
+    private static Result handleType(String[] parts) {
+        Result res = new Result();
         if (parts.length < 2 || parts[1].isBlank()) {
-            System.out.println("type: missing argument");
-            return;
+            res.stderr = "type: missing argument";
+            return res;
         }
-
         String target = parts[1];
-
         if (BUILTIN_COMMANDS.contains(target)) {
-            System.out.printf("%s is a shell builtin%n", target);
-            return;
+            res.stdout = target+" is a shell builtin%n";
+            return res;
         }
 
         String executablePath = findExecutable(target);
         if (executablePath != null) {
-            System.out.printf("%s is %s%n", target, executablePath);
+            res.stdout = target+" is "+executablePath;
+            return res;
         } else {
-            System.out.printf("%s: not found%n", target);
+            res.stderr = target+": not found";
+            return res;
         }
     }
 
