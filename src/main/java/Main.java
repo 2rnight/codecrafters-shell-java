@@ -217,9 +217,11 @@ public class Main {
     private static Result handleEcho(List<String> parts) {
         Result res = new Result();
         if (parts.isEmpty()) {
+            res.stdout="\n";
             return res;
         } else {
             res.stdout = String.join(" ",parts);
+            res.stdout+="\n";
             return res;
         }
     }
