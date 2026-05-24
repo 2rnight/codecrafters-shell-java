@@ -60,6 +60,12 @@ public class Main {
                     return;
                 }
                 stdoutFiles.add(new RedirectTarget(tokens.get(++i),true));
+            } else if ("2>>".equals(token)) {
+                if (i + 1 >= tokens.size()) {
+                    System.err.println("syntax error: no file after 2>>");
+                    return;
+                }
+                stderrFiles.add(new RedirectTarget(tokens.get(++i),true));
             } else {
                 commandArgs.add(token);
             }
