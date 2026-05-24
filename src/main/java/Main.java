@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 
@@ -35,8 +36,8 @@ public class Main {
 
     public static void processCommand(List<String> tokens) {
         List<String> commandArgs = new ArrayList<>();
-        List<String> stdoutFiles = new ArrayList<>();
-        List<String> stderrFiles = new ArrayList<>();
+        List<RedirectTarget> stdoutFiles = new ArrayList<>();
+        List<RedirectTarget> stderrFiles = new ArrayList<>();
 
         for (int i = 0; i < tokens.size(); i++) {
             String token = tokens.get(i);
@@ -46,13 +47,19 @@ public class Main {
                     System.err.println("syntax error: no file after >");
                     return;
                 }
-                stdoutFiles.add(tokens.get(++i));
+                stdoutFiles.add(new RedirectTarget(tokens.get(++i),false) );
             } else if ("2>".equals(token)) {
                 if (i + 1 >= tokens.size()) {
                     System.err.println("syntax error: no file after 2>");
                     return;
                 }
-                stderrFiles.add(tokens.get(++i));
+                stderrFiles.add(new RedirectTarget(tokens.get(++i),false));
+            } else if (">>".equals(token)||"1>>".equals(token)) {
+                if (i + 1 >= tokens.size()) {
+                    System.err.println("syntax error: no file after >>");
+                    return;
+                }
+                stdoutFiles.add(new RedirectTarget(tokens.get(++i),true));
             } else {
                 commandArgs.add(token);
             }
@@ -61,7 +68,7 @@ public class Main {
         // 如果 outputFiles 为空，说明没有重定向，逻辑自然退化为普通执行
         execute(commandArgs,stdoutFiles,stderrFiles);
     }
-    private static void execute(List<String> commandArgs, List<String> stdoutFiles, List<String> stderrFiles) {
+    private static void execute(List<String> commandArgs, List<RedirectTarget> stdoutFiles, List<RedirectTarget> stderrFiles) {
         String command = commandArgs.get(0);
         List<String> Args = commandArgs.subList(1,commandArgs.size());
         Result res = new Result();
@@ -116,17 +123,27 @@ public class Main {
         return res;
     }
 
-    private static void writeToFile(List<String> fileName, String content) {
+    private static void writeToFile(List<RedirectTarget> fileName, String content) {
         try {
             for(int i = 0;i<fileName.size();i++){
-                Path filePath = cwd.resolve(fileName.get(i));
+                Path filePath = cwd.resolve(fileName.get(i).fileName);
 
                 if (filePath.getParent() != null) {
                     Files.createDirectories(filePath.getParent());
                 }
 
                 if(i ==fileName.size()-1){
-                    Files.writeString(filePath, content);
+                    if(fileName.get(i).append){
+                        Files.writeString(filePath, content,
+                                StandardOpenOption.CREATE,
+                                StandardOpenOption.APPEND);
+                    }else {
+                        Files.writeString(filePath, content,
+                                StandardOpenOption.CREATE,
+                                StandardOpenOption.TRUNCATE_EXISTING,
+                                StandardOpenOption.WRITE);
+                    }
+
                 }else{
                     Files.writeString(filePath, "");
                 }
