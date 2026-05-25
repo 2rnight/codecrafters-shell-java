@@ -1,3 +1,6 @@
+import org.jline.reader.*;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,31 +13,47 @@ import java.util.*;
 public class Main {
     private static final Set<String> BUILTIN_COMMANDS = Set.of("exit", "echo", "type","pwd","cd");
     static Path cwd = Paths.get("").toAbsolutePath();
-    public static void main(String[] args) throws Exception{
-        Scanner scanner = new Scanner(System.in);
-        while (true) {
-            System.out.print("$ ");
 
-            if (!scanner.hasNextLine()) {
+    public static void main(String[] args) throws Exception{
+
+        Terminal terminal = TerminalBuilder.builder()
+                .system(true)
+                .build();
+        Completer completer = new BuiltinCompleter();
+
+        LineReader reader = LineReaderBuilder.builder()
+                .terminal(terminal)
+                .completer(completer)
+                .build();
+        while (true) {
+            String line;
+            try {
+                line = reader.readLine("$ ");
+            } catch (UserInterruptException e) {
+                continue;
+            } catch (EndOfFileException e) {
                 break;
             }
 
-            String commandLine = scanner.nextLine();
-
-            if (commandLine == null || commandLine.isBlank()) {
+            if (line == null || line.isBlank()) {
                 continue;
             }
 
-
-            List<String> tokens = parseTokens(commandLine);
-            processCommand(tokens);
-
+            boolean shouldExit = handleCommand(line);
+            if (shouldExit) {
+                break;
+            }
         }
 
-        scanner.close();
+
+
+    }
+    private static boolean handleCommand(String commandLine){
+        List<String> tokens = parseTokens(commandLine);
+        return processCommand(tokens);
     }
 
-    public static void processCommand(List<String> tokens) {
+    public static boolean processCommand(List<String> tokens) {
         List<String> commandArgs = new ArrayList<>();
         List<RedirectTarget> stdoutFiles = new ArrayList<>();
         List<RedirectTarget> stderrFiles = new ArrayList<>();
@@ -45,25 +64,25 @@ public class Main {
             if (">".equals(token)||"1>".equals(token)) {
                 if (i + 1 >= tokens.size()) {
                     System.err.println("syntax error: no file after >");
-                    return;
+                    return false;
                 }
                 stdoutFiles.add(new RedirectTarget(tokens.get(++i),false) );
             } else if ("2>".equals(token)) {
                 if (i + 1 >= tokens.size()) {
                     System.err.println("syntax error: no file after 2>");
-                    return;
+                    return false;
                 }
                 stderrFiles.add(new RedirectTarget(tokens.get(++i),false));
             } else if (">>".equals(token)||"1>>".equals(token)) {
                 if (i + 1 >= tokens.size()) {
                     System.err.println("syntax error: no file after >>");
-                    return;
+                    return false;
                 }
                 stdoutFiles.add(new RedirectTarget(tokens.get(++i),true));
             } else if ("2>>".equals(token)) {
                 if (i + 1 >= tokens.size()) {
                     System.err.println("syntax error: no file after 2>>");
-                    return;
+                    return false;
                 }
                 stderrFiles.add(new RedirectTarget(tokens.get(++i),true));
             } else {
@@ -72,15 +91,15 @@ public class Main {
         }
 
         // 如果 outputFiles 为空，说明没有重定向，逻辑自然退化为普通执行
-        execute(commandArgs,stdoutFiles,stderrFiles);
+        return execute(commandArgs,stdoutFiles,stderrFiles);
     }
-    private static void execute(List<String> commandArgs, List<RedirectTarget> stdoutFiles, List<RedirectTarget> stderrFiles) {
+    private static boolean execute(List<String> commandArgs, List<RedirectTarget> stdoutFiles, List<RedirectTarget> stderrFiles) {
         String command = commandArgs.get(0);
         List<String> Args = commandArgs.subList(1,commandArgs.size());
         Result res = new Result();
 
         if ("exit".equals(command)) {
-            System.exit(0);
+            return true;
         } else if ("echo".equals(command)) {
             res = handleEcho(Args);
         } else if ("type".equals(command)) {
@@ -103,7 +122,7 @@ public class Main {
         } else {
             writeToFile(stderrFiles, res.stderr);
         }
-
+        return false;
     }
     private static Result executeExternal(List<String> commandArgs) {
         Result res = new Result();

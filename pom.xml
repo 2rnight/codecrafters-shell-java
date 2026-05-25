@@ -7,7 +7,13 @@
     <groupId>io.codecrafters</groupId>
     <artifactId>codecrafters-shell</artifactId>
     <version>1.0</version>
-
+    <dependencies>
+        <dependency>
+            <groupId>org.jline</groupId>
+            <artifactId>jline</artifactId>
+            <version>3.26.1</version>
+        </dependency>
+    </dependencies>
    <properties>
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
