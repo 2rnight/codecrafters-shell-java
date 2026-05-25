@@ -38,8 +38,7 @@ public class Main {
             if (line == null || line.isBlank()) {
                 continue;
             }
-            ParsedLine parsedLine = reader.getParser().parse(line, 0);
-            String rawLine = parsedLine.line();
+            String rawLine = reader.getBuffer().toString();;
             boolean shouldExit = handleCommand(rawLine);
             if (shouldExit) {
                 break;
