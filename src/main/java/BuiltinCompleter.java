@@ -36,12 +36,13 @@ class BuiltinCompleter implements Completer {
     private Set<String> findFileMatches(String input) {
         Set<String> matches = new TreeSet<>();
         int lastSpaceIndex = input.lastIndexOf(" ");
-        String prefix = (lastSpaceIndex != -1) ? input.substring(lastSpaceIndex + 1) : "";
+        String last = (lastSpaceIndex != -1) ? input.substring(lastSpaceIndex + 1) : "";
+        String prefix = last;
         Path currentDir = Paths.get("");
-        if(prefix.contains("/")){
+        if(last.contains("/")){
             int lastSlashIndex = prefix.lastIndexOf("/");
-            String addedpath =prefix.substring(0,lastSlashIndex);
-            prefix =prefix.substring(lastSlashIndex + 1);
+            String addedpath =last.substring(0,lastSlashIndex);
+            prefix =last.substring(lastSlashIndex + 1);
             currentDir = currentDir.resolve(addedpath);
         }
 
