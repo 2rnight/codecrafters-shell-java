@@ -43,7 +43,7 @@ class BuiltinCompleter implements Completer {
         if (matches.size() == 1) {
             pendingWord = null;
             String cmd = matches.iterator().next();
-            candidates.add(new Candidate(cmd, cmd, null, null, "", null, true));
+            candidates.add(new Candidate(cmd, cmd, null, null, " ", null, true));
             return;
         }
 
@@ -53,7 +53,7 @@ class BuiltinCompleter implements Completer {
         // 情况3：LCP 比当前输入长，补全到 LCP（不加空格）
         if (lcp.length() > word.length()) {
             pendingWord = null;
-            candidates.add(new Candidate(lcp, lcp, null, null, null, null, true));
+            candidates.add(new Candidate(lcp, lcp, null, null, null, null, false));
             return;
         }
 
