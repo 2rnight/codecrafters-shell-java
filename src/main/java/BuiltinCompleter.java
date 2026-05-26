@@ -3,6 +3,11 @@ import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 class BuiltinCompleter implements Completer {
@@ -14,6 +19,22 @@ class BuiltinCompleter implements Completer {
     public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
         if (line.wordIndex() != 0) {
             pendingWord = null;
+            String word = line.word();
+            int lastSpaceIndex = word.lastIndexOf(" ");
+            String prefix = (lastSpaceIndex != -1) ? word.substring(lastSpaceIndex + 1) : "";
+            Set<String> matches = new TreeSet<>();
+
+            Path currentDir = Paths.get("");
+            String globPattern = prefix + "*";
+
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(currentDir, globPattern)) {
+                for (Path entry : stream) {
+                    matches.add(entry.toString());
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            handleMatches(reader,word,matches,candidates);
             return;
         }
 
@@ -32,7 +53,12 @@ class BuiltinCompleter implements Completer {
                 matches.add(cmd);
             }
         }
+        handleMatches(reader,word,matches,candidates);
 
+    }
+
+    private void handleMatches(LineReader reader, String word,
+                               Set<String> matches, List<Candidate> candidates){
         // 情况1：无匹配
         if (matches.isEmpty()) {
             pendingWord = null;
@@ -74,7 +100,6 @@ class BuiltinCompleter implements Completer {
             pendingWord = word;
         }
     }
-
     /**
      * 计算一组字符串的最长公共前缀
      */
