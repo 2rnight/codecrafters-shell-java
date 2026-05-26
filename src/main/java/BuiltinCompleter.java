@@ -10,7 +10,7 @@ import java.util.TreeSet;
 class BuiltinCompleter implements Completer {
     private static final List<String> BUILTINS = List.of("echo", "exit");
     private final ExecutableCache executableCache = new ExecutableCache();
-
+    private String pendingWord = null;
     @Override
     public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
         // 只补全第一个单词
@@ -35,7 +35,17 @@ class BuiltinCompleter implements Completer {
                 added.add(cmd);
             }
         }
-
+        if(pendingWord.equals(word)){
+            reader.printAbove(String.join("  ", added));
+            pendingWord = null;
+            return;
+        }
+        if(added.size()>1){
+            pendingWord = word;
+            reader.getTerminal().writer().print("\u0007");
+            reader.getTerminal().writer().flush();
+            return;
+        }
         for (String cmd : added) {
             candidates.add(new Candidate(
                     cmd,
