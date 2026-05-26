@@ -40,8 +40,8 @@ class BuiltinCompleter implements Completer {
         Path currentDir = Paths.get("");
         if(prefix.contains("/")){
             int lastSlashIndex = prefix.lastIndexOf("/");
-            prefix = (lastSlashIndex != -1) ? input.substring(lastSlashIndex + 1) : "";
-            String addedpath =(lastSlashIndex != -1) ? input.substring(0,lastSlashIndex) : "";
+            prefix = (lastSlashIndex != -1) ? prefix.substring(lastSlashIndex + 1) : "";
+            String addedpath =(lastSlashIndex != -1) ? prefix.substring(0,lastSlashIndex) : "";
             currentDir = currentDir.resolve(addedpath);
         }
 
