@@ -25,6 +25,7 @@ public class Main {
                 .terminal(terminal)
                 .completer(completer)
                 .build();
+        reader.setOpt(LineReader.Option.LIST_AMBIGUOUS);
         while (true) {
             String line;
             try {
