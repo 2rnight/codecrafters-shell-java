@@ -35,7 +35,7 @@ class BuiltinCompleter implements Completer {
                 added.add(cmd);
             }
         }
-        if(pendingWord.equals(word)){
+        if(word.equals(pendingWord)){
             reader.printAbove(String.join("  ", added));
             pendingWord = null;
             return;
