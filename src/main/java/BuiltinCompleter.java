@@ -1,3 +1,4 @@
+import jdk.internal.org.jline.reader.History;
 import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
@@ -20,42 +21,59 @@ class BuiltinCompleter implements Completer {
         if (line.wordIndex() != 0) {
             pendingWord = null;
             String word = line.word();
-            int lastSpaceIndex = word.lastIndexOf(" ");
-            String prefix = (lastSpaceIndex != -1) ? word.substring(lastSpaceIndex + 1) : "";
-            Set<String> matches = new TreeSet<>();
-
-            Path currentDir = Paths.get("");
-            String globPattern = prefix + "*";
-
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(currentDir, globPattern)) {
-                for (Path entry : stream) {
-                    matches.add(entry.toString());
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            Set<String> matches = findFileMatches(word);
             handleMatches(reader,word,matches,candidates);
             return;
         }
 
         String word = line.word();
-        Set<String> matches = new TreeSet<>();
+        Set<String> matches = findCommandMatches(word);
 
-        // 收集所有匹配项
+
+        handleMatches(reader,word,matches,candidates);
+
+    }
+    private Set<String> findFileMatches(String input) {
+        Set<String> matches = new TreeSet<>();
+        int lastSpaceIndex = input.lastIndexOf(" ");
+        String prefix = (lastSpaceIndex != -1) ? input.substring(lastSpaceIndex + 1) : "";
+        Path currentDir = Paths.get("");
+        if(prefix.contains("/")){
+            int lastSlashIndex = prefix.lastIndexOf("/");
+            prefix = (lastSlashIndex != -1) ? input.substring(lastSlashIndex + 1) : "";
+            String addedpath =(lastSlashIndex != -1) ? input.substring(0,lastSlashIndex) : "";
+            currentDir = currentDir.resolve(addedpath);
+        }
+
+        String globPattern = prefix + "*";
+
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(currentDir, globPattern)) {
+            for (Path entry : stream) {
+                matches.add(entry.toString());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return matches;
+    }
+    private Set<String> findCommandMatches(String prefix) {
+        Set<String> matches =new TreeSet<>();
+
         for (String cmd : BUILTINS) {
-            if (cmd.startsWith(word)) {
+            if (cmd.startsWith(prefix)) {
                 matches.add(cmd);
             }
         }
 
         for (String cmd : executableCache.getCache()) {
-            if (cmd.startsWith(word)) {
+            if (cmd.startsWith(prefix)) {
                 matches.add(cmd);
             }
         }
-        handleMatches(reader,word,matches,candidates);
-
+        return matches;
     }
+
+
 
     private void handleMatches(LineReader reader, String word,
                                Set<String> matches, List<Candidate> candidates){
