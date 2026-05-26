@@ -36,16 +36,30 @@ class BuiltinCompleter implements Completer {
     private Set<String> findFileMatches(String input) {
         Set<String> matches = new TreeSet<>();
         int lastSpaceIndex = input.lastIndexOf(" ");
-        String last = (lastSpaceIndex != -1) ? input.substring(lastSpaceIndex + 1) : "";
-        String prefix = last;
-        Path currentDir = Paths.get("");
-        if(last.contains("/")){
-            int lastSlashIndex = prefix.lastIndexOf("/");
-            String addedpath =last.substring(0,lastSlashIndex);
-            prefix =last.substring(lastSlashIndex + 1);
-            currentDir = currentDir.resolve(addedpath);
-        }
 
+        // 1. 获取最后一个空格后面的完整参数（例如 "strawberry/grape/"）
+        String lastArgument = (lastSpaceIndex != -1) ? input.substring(lastSpaceIndex + 1) : input;
+
+        Path currentDir = Paths.get("");
+        String prefix = lastArgument; // 默认前缀就是整个参数
+
+        // 2. 检查这个参数里有没有路径斜杠
+        if (lastArgument.contains("/")) {
+            int lastSlashIndex = lastArgument.lastIndexOf("/");
+
+            // 【关键改动】：必须基于原始的 lastArgument 截取，且注意先后顺序！
+
+            // 斜杠前面的是路径部分：从 0 到最后一个斜杠（不含斜杠）
+            String addedpath = lastArgument.substring(0, lastSlashIndex);
+
+            // 斜杠后面的是文件名搜索前缀：从斜杠后一位到末尾
+            prefix = lastArgument.substring(lastSlashIndex + 1);
+
+            // 如果路径不为空，移动当前工作目录
+            if (!addedpath.isEmpty()) {
+                currentDir = currentDir.resolve(addedpath);
+            }
+        }
         String globPattern = prefix + "*";
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(currentDir, globPattern)) {
