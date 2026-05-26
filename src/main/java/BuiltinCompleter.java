@@ -2,6 +2,8 @@ import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
+import org.jline.reader.impl.LineReaderImpl;
+
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -36,7 +38,18 @@ class BuiltinCompleter implements Completer {
             }
         }
         if(word.equals(pendingWord)){
-            reader.printAbove(String.join("  ", added));
+            var out = reader.getTerminal().writer();
+
+            // 从 "$ xyz_" 这一行移动到下一行
+            out.println();
+
+            // 打印候选
+            out.println(String.join("  ", added));
+            out.flush();
+
+            // 让 JLine 重新画出 prompt + 当前输入
+            ((LineReaderImpl) reader).redisplay();
+
             pendingWord = null;
             return;
         }
