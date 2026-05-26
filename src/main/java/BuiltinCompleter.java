@@ -47,10 +47,8 @@ class BuiltinCompleter implements Completer {
             out.println(String.join("  ", added));
             out.flush();
 
-            // 让 JLine 重新画出 prompt + 当前输入
-            out.println("$ "+pendingWord);
-
-
+            out.print("$ "+reader.getBuffer().toString());
+            out.flush();
             pendingWord = null;
             return;
         }
