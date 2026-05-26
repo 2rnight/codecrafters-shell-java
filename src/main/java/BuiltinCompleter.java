@@ -43,7 +43,7 @@ class BuiltinCompleter implements Completer {
         if (matches.size() == 1) {
             pendingWord = null;
             String cmd = matches.iterator().next();
-            candidates.add(new Candidate(cmd, cmd, null, null, " ", null, true));
+            candidates.add(new Candidate(cmd, cmd, null, null, "", null, true));
             return;
         }
 
