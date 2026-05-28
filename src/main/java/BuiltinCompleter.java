@@ -117,6 +117,7 @@ class BuiltinCompleter implements Completer {
             var out = reader.getTerminal().writer();
             out.println();
             out.println(String.join("  ", matches));
+            System.out.println(matches);
             out.print("$ " + reader.getBuffer().toString());
             out.flush();
             pendingWord = null;
