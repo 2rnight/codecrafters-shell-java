@@ -19,7 +19,6 @@ class BuiltinCompleter implements Completer {
     @Override
     public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
         if (line.wordIndex() != 0) {
-            pendingWord = null;
             String word = line.word();
             Set<String> matches = findFileMatches(word);
             handleMatches(reader,word,matches,candidates);
@@ -115,10 +114,8 @@ class BuiltinCompleter implements Completer {
         if (Objects.equals(word, pendingWord)) {
             // 第二次 Tab，列出候选
             var out = reader.getTerminal().writer();
-            System.out.println(matches+"123123");
             out.println();
             out.println(String.join("  ", matches));
-
             out.print("$ " + reader.getBuffer().toString());
             out.flush();
             pendingWord = null;
