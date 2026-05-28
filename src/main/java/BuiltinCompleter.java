@@ -45,13 +45,19 @@ class BuiltinCompleter implements Completer {
         }
 
         String globPattern = prefix + "*";
+        if (Files.exists(currentDir) && Files.isDirectory(currentDir)) {
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(currentDir, globPattern)) {
+                for (Path entry : stream) {
+                    if (Files.isDirectory(entry)) {
+                        matches.add(entry + "/");
+                    } else {
+                        matches.add(entry.toString());
+                    }
 
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(currentDir, globPattern)) {
-            for (Path entry : stream) {
-                matches.add(entry.toString());
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         return matches;
     }
