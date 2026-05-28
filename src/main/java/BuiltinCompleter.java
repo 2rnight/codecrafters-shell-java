@@ -115,9 +115,10 @@ class BuiltinCompleter implements Completer {
         if (Objects.equals(word, pendingWord)) {
             // 第二次 Tab，列出候选
             var out = reader.getTerminal().writer();
+            System.out.println(matches+"123123");
             out.println();
             out.println(String.join("  ", matches));
-            System.out.println(matches+"123123");
+
             out.print("$ " + reader.getBuffer().toString());
             out.flush();
             pendingWord = null;
