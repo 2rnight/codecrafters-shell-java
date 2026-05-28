@@ -36,9 +36,11 @@ class BuiltinCompleter implements Completer {
         Set<String> matches = new TreeSet<>();
         String prefix = input;
         Path currentDir = Paths.get("");
+        String dirPrefix = ""; // 新增：用来保存截掉的路径前缀
         if(prefix.contains("/")){
             int lastSlashIndex = prefix.lastIndexOf("/");
             String addedpath =prefix.substring(0,lastSlashIndex);
+            dirPrefix =prefix.substring(0,lastSlashIndex+1);
             prefix =prefix.substring(lastSlashIndex + 1);
             currentDir = currentDir.resolve(addedpath);
         }
@@ -49,9 +51,9 @@ class BuiltinCompleter implements Completer {
                 for (Path entry : stream) {
                     String name = entry.getFileName().toString();
                     if (Files.isDirectory(entry)) {
-                        matches.add(name+ "/");
+                        matches.add(dirPrefix+name+ "/");
                     } else {
-                        matches.add(name);
+                        matches.add(dirPrefix+name);
                     }
 
                 }
