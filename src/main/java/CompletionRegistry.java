@@ -8,7 +8,7 @@ public class CompletionRegistry {
         return registry.containsKey(key);
     }
     public String getCompletionSpecToString(String key){
-        return registry.get(key).toString();
+        return registry.get(key).getScriptPath();
     }
     public void register(String command, String scriptPath) {
         registry.put(command, new CompletionSpec(scriptPath));

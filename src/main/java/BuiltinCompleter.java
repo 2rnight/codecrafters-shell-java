@@ -36,7 +36,6 @@ class BuiltinCompleter implements Completer {
                     }
                     return;
                 } catch (Exception e) {
-                    candidates.add(new Candidate(scriptpath,scriptpath,null,null,null,null,true));
                     return ;
                 }
             }
