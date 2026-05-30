@@ -36,7 +36,7 @@ class BuiltinCompleter implements Completer {
                     }
                     return;
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    return;
                 }
             }
             String word = line.word();
