@@ -36,7 +36,8 @@ class BuiltinCompleter implements Completer {
                     }
                     return;
                 } catch (Exception e) {
-                    return;
+                    candidates.add(new Candidate(scriptpath,scriptpath,null,null,null,null,true));
+                    return ;
                 }
             }
             String word = line.word();
