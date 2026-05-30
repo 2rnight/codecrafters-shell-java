@@ -146,7 +146,7 @@ public class Main {
             }
             String targetCmd = commandArgs.get(2);
             if(registry.isContain(targetCmd)){
-                res.stdout = registry.print(targetCmd);
+                res.stdout = registry.print(targetCmd)+"\n";
             } else {
                 res.stderr = "complete: " + targetCmd + ": no completion specification\n";
             }
