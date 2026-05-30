@@ -4,7 +4,9 @@ import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,10 +17,28 @@ class BuiltinCompleter implements Completer {
     private static final List<String> BUILTINS = List.of("echo", "exit");
     private final ExecutableCache executableCache = new ExecutableCache();
     private String pendingWord = null;
-
+    CompletionRegistry registry;
+    public BuiltinCompleter(CompletionRegistry registry) {
+        this.registry = registry;
+    }
     @Override
     public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
         if (line.wordIndex() != 0) {
+            String commandName = line.words().get(0);
+            if(registry.isContain(commandName)){
+                String scriptpath = registry.getCompletionSpecToString(commandName);
+                try {
+                    Process process = new ProcessBuilder(scriptpath).start();
+                    BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    String output = br.readLine();
+                    if(output!=null){
+                        candidates.add(new Candidate(output,output,null,null,null,null,true));
+                    }
+                    return;
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
             String word = line.word();
             Set<String> matches = findFileMatches(word);
             handleMatches(reader,word,matches,candidates);
@@ -27,8 +47,6 @@ class BuiltinCompleter implements Completer {
 
         String word = line.word();
         Set<String> matches = findCommandMatches(word);
-
-
         handleMatches(reader,word,matches,candidates);
 
     }

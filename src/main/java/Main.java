@@ -11,15 +11,15 @@ import java.util.*;
 
 
 public class Main {
-    private static final Set<String> BUILTIN_COMMANDS = Set.of("exit", "echo", "type","pwd","cd");
+    private static final Set<String> BUILTIN_COMMANDS = Set.of("exit", "echo", "type","pwd","cd","complete");
     static Path cwd = Paths.get("").toAbsolutePath();
-
+    static CompletionRegistry registry = new CompletionRegistry();
     public static void main(String[] args) throws Exception{
 
         Terminal terminal = TerminalBuilder.builder()
                 .system(true)
                 .build();
-        Completer completer = new BuiltinCompleter();
+        Completer completer = new BuiltinCompleter(registry);
 
         LineReader reader = LineReaderBuilder.builder()
                 .terminal(terminal)
@@ -109,6 +109,8 @@ public class Main {
             res.stdout = cwd.toString()+"\n";
         } else if ("cd".equals(command)){
             cwd = handleCd(cwd,commandArgs.toArray(new String[0]));
+        } else if ("complete".equals(command)) {
+            res = handleComplete(commandArgs);
         } else {
             res = executeExternal(commandArgs);
         }
@@ -125,6 +127,48 @@ public class Main {
         }
         return false;
     }
+
+    private static Result handleComplete(List<String> commandArgs) {
+        Result res = new Result();
+        if (commandArgs.size() < 2) {
+            res.stderr = "complete: usage: complete -p <command> OR complete -C <script> <command>";
+            return res;
+        }
+
+        String flag = commandArgs.get(1);
+
+
+        if ("-p".equals(flag)) {
+            // -p 后面必须跟 1 个参数，所以总长度至少为 3
+            if (commandArgs.size() < 3) {
+                res.stderr = "complete: -p option requires a command name";
+                return res;
+            }
+            String targetCmd = commandArgs.get(2);
+            if(registry.isContain(targetCmd)){
+                res.stdout = registry.print(targetCmd);
+            } else {
+                res.stderr = "complete: " + targetCmd + ": no completion specification";
+            }
+
+
+        } else if ("-C".equals(flag)) {
+            if (commandArgs.size() < 4) {
+                res.stderr = "complete: -C option requires a script path and a command name";
+                return res;
+            }
+            String scriptPath = commandArgs.get(2);
+            String targetCmd = commandArgs.get(3);
+            registry.register(targetCmd, scriptPath);
+
+
+        } else {
+            res.stderr = "complete: invalid option: " + flag;
+        }
+
+        return res;
+    }
+
     private static Result executeExternal(List<String> commandArgs) {
         Result res = new Result();
         try {
