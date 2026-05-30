@@ -131,7 +131,7 @@ public class Main {
     private static Result handleComplete(List<String> commandArgs) {
         Result res = new Result();
         if (commandArgs.size() < 2) {
-            res.stderr = "complete: usage: complete -p <command> OR complete -C <script> <command>";
+            res.stderr = "complete: usage: complete -p <command> OR complete -C <script> <command>\n";
             return res;
         }
 
@@ -141,20 +141,20 @@ public class Main {
         if ("-p".equals(flag)) {
             // -p 后面必须跟 1 个参数，所以总长度至少为 3
             if (commandArgs.size() < 3) {
-                res.stderr = "complete: -p option requires a command name";
+                res.stderr = "complete: -p option requires a command name\n";
                 return res;
             }
             String targetCmd = commandArgs.get(2);
             if(registry.isContain(targetCmd)){
                 res.stdout = registry.print(targetCmd);
             } else {
-                res.stderr = "complete: " + targetCmd + ": no completion specification";
+                res.stderr = "complete: " + targetCmd + ": no completion specification\n";
             }
 
 
         } else if ("-C".equals(flag)) {
             if (commandArgs.size() < 4) {
-                res.stderr = "complete: -C option requires a script path and a command name";
+                res.stderr = "complete: -C option requires a script path and a command name\n";
                 return res;
             }
             String scriptPath = commandArgs.get(2);
@@ -163,7 +163,7 @@ public class Main {
 
 
         } else {
-            res.stderr = "complete: invalid option: " + flag;
+            res.stderr = "complete: invalid option: " + flag+"\n";
         }
 
         return res;
