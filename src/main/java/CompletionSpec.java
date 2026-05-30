@@ -10,6 +10,6 @@ public class CompletionSpec {
     }
 
     public String toDisplayString(String command) {
-        return "complete -C '" + scriptPath + "' " + command;
+        return "complete -C '" + scriptPath + "' " + command+"/n";
     }
 }
